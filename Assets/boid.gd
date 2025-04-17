@@ -3,7 +3,7 @@ extends Node3D
 @export var maxVelocity: float = 280
 @export var maxAcceleration: float = 1000
 
-
+var Parent : VisibleOnScreenNotifier3D
 var velocity := Vector3.ZERO
 var acceleration := Vector3.ZERO
 
@@ -18,14 +18,14 @@ func _ready():
 						randf_range(-maxVelocity, maxVelocity))
 	
 func _process(delta):
-	print(position)
-	velocity += acceleration.limit_length(maxAcceleration * delta)
-	velocity = velocity.limit_length(maxVelocity)
-	acceleration.x = 0
-	acceleration.y = 0
-	acceleration.z = 0
+	if Parent.is_on_screen():
+		velocity += acceleration.limit_length(maxAcceleration * delta)
+		velocity = velocity.limit_length(maxVelocity)
+		acceleration.x = 0
+		acceleration.y = 0
+		acceleration.z = 0
 	
-	position += velocity * delta
+		position += velocity * delta
 	
-	look_at(position + velocity)
+		look_at(position + velocity)
 	

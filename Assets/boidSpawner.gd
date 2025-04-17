@@ -5,6 +5,7 @@ extends VisibleOnScreenNotifier3D
 
 
 var _boids = []
+var _avoiders = []
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -14,27 +15,29 @@ func _ready():
 	
 	for i in range(numberOfBoids):
 		var instance = boidData.boidScene.instantiate()
-		$Avoiders.add_child(instance)
+		$Boids.add_child(instance)
 		_boids.append(instance)
 		instance.set_position( Vector3(
 			randf_range(aabb.position.x, aabb.size.x+aabb.position.x),
 			randf_range(aabb.position.y, aabb.size.y+aabb.position.y),
 			randf_range(aabb.position.z, aabb.size.z+aabb.position.z)
 		))
+		instance.Parent = self
 		instance.maxVelocity = boidData.maxVelocity
 		instance.maxAcceleration = boidData.maxAcceleration
 
 func _process(delta):
-	_detectNeighbors()
+	if is_on_screen():
+		_detectNeighbors()
 	
-	_cohesion()	
-	_separation()
-	_alignment()
+		_cohesion()	
+		_separation()
+		_alignment()
 	
-	_borders(delta)
-	for i in $Avoiders.get_children():
-		_escapePredator(i)
-	
+		_borders(delta)
+		for i in $Avoiders.get_children():
+			_escapePredator(i)
+
 func _detectNeighbors():
 	for i in range(_boids.size()):
 		_boids[i].neighbors.clear()

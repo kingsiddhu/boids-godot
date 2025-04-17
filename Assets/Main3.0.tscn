@@ -51,5 +51,9 @@ numberOfBoids = 100
 
 [node name="Avoiders" type="Node3D" parent="VisibleOnScreenNotifier3D"]
 
+[node name="Marker3D" type="Marker3D" parent="VisibleOnScreenNotifier3D/Avoiders"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.7762, 0, 61.2183)
+gizmo_extents = 10.0
+
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 132.331)
