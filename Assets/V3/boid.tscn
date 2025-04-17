@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://bpfru02q8e6wo"]
+
+[ext_resource type="Script" uid="uid://b1uhvb2p1258p" path="res://Assets/V3/boid.gd" id="1_nxohh"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_ysevq"]
+
+[node name="RigidBody3D" type="Node3D"]
+script = ExtResource("1_nxohh")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_ysevq")

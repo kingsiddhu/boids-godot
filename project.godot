@@ -11,5 +11,10 @@ config_version=5
 [application]
 
 config/name="Boids"
+run/main_scene="uid://dry4n2alw8f6c"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
+
+[physics]
+
+3d/default_gravity=0.0

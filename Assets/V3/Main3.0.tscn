@@ -1,0 +1,55 @@
+[gd_scene load_steps=8 format=3 uid="uid://dry4n2alw8f6c"]
+
+[ext_resource type="Script" uid="uid://t6136j2ir5il" path="res://Assets/V3/boidSpawner.gd" id="1_h4bx0"]
+[ext_resource type="PackedScene" uid="uid://bpfru02q8e6wo" path="res://Assets/V3/boid.tscn" id="2_8bnh4"]
+[ext_resource type="Script" uid="uid://bkuxrdlc6ng6h" path="res://Assets/boidResource.gd" id="3_t41lc"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_5we7w"]
+sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
+ground_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
+
+[sub_resource type="Sky" id="Sky_fejey"]
+sky_material = SubResource("ProceduralSkyMaterial_5we7w")
+
+[sub_resource type="Environment" id="Environment_h4bx0"]
+background_mode = 2
+sky = SubResource("Sky_fejey")
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="Resource" id="Resource_kbw8a"]
+script = ExtResource("3_t41lc")
+boidScene = ExtResource("2_8bnh4")
+visualRange = 30.0
+separationDistance = 80.0
+predatorMinDist = 30.0
+cohesionWeight = 0.3
+separationWeight = 50.0
+alignmentWeight = 1.0
+bordersWeight = 30.0
+predatorWeight = 50.0
+maxVelocity = 30.0
+maxAcceleration = 100.0
+metadata/_custom_type_script = "uid://bkuxrdlc6ng6h"
+
+[node name="Main3_0" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_h4bx0")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 0, 0, 0)
+shadow_enabled = true
+
+[node name="VisibleOnScreenNotifier3D" type="VisibleOnScreenNotifier3D" parent="."]
+aabb = AABB(-82, -79, -77.1514, 164, 158, 154.303)
+script = ExtResource("1_h4bx0")
+boidData = SubResource("Resource_kbw8a")
+numberOfBoids = 100
+
+[node name="Boids" type="Node3D" parent="VisibleOnScreenNotifier3D"]
+
+[node name="Avoiders" type="Node3D" parent="VisibleOnScreenNotifier3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 132.331)
