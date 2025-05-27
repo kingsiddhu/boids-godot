@@ -7,10 +7,18 @@ extends VisibleOnScreenNotifier3D
 var _boids = []
 var _avoiders = []
 
+
+@export var bordermag : float = .9
+@onready var enve = aabb.position
+@onready var epve = aabb.size + enve
+
+@onready var bsafen = enve * bordermag 
+@onready var bsafep = epve * bordermag 
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
-	
+	prints(enve,epve)
 	randomize()
 	
 	for i in range(numberOfBoids):
@@ -27,13 +35,15 @@ func _ready():
 		instance.maxAcceleration = boidData.maxAcceleration
 
 func _process(delta):
+	
+	
 	if is_on_screen():
 		_detectNeighbors()
 	
 		_cohesion()	
 		_separation()
 		_alignment()
-	
+		_randomness()
 		_borders(delta)
 		for i in $Avoiders.get_children():
 			_escapePredator(i)
@@ -101,12 +111,31 @@ func _alignment():
 
 func _borders(delta):
 	for boid in _boids:
-		var pos = boid.get_position()
-		
+		var pos = boid.position
 		if (
-			(pos.x < aabb.position.x or pos.x > aabb.size.x+aabb.position.x) or 
-			(pos.y < aabb.position.y or pos.y > aabb.size.y+aabb.position.y) or
-			(pos.z < aabb.position.z or pos.z > aabb.size.z+aabb.position.z)):
+			(pos.x < enve.x or pos.x > epve.x) or 
+			(pos.y < enve.y or pos.y > epve.y) or
+			(pos.z < enve.z or pos.z > epve.z)):
+			if pos.x < enve.x:
+				pos.x= enve.x
+			if pos.y < enve.y:
+				pos.y= enve.y
+			if pos.z < enve.z:
+				pos.z= enve.z
+			if pos.x > epve.x:
+				pos.x= epve.x
+			if pos.y > epve.y:
+				pos.y= epve.y
+			if pos.z > epve.z:
+				pos.z= epve.z
+			var midsPoint = Vector3.ZERO
+			var disr = (midsPoint - pos).normalized()
+			boid.acceleration = disr
+			boid.position = pos
+		if (
+			(pos.x < bsafen.x or pos.x > bsafep.x) or 
+			(pos.y < bsafen.y or pos.y > bsafep.y) or
+			(pos.z < bsafen.z or pos.z > bsafep.z)):
 			boid.timeOutOfBorders += delta
 			var midPoint = Vector3.ZERO
 			var dir = (midPoint - boid.get_position()).normalized()
@@ -114,10 +143,18 @@ func _borders(delta):
 		else:
 			boid.timeOutOfBorders = 0
 
+func _randomness():
+	randomize()
+	for boid in _boids:
+		boid.acceleration += Vector3(randf_range(-1,1),randf_range(-1,1),randf_range(-1,1)).normalized() * boidData.randomnessFactor
+
 func _escapePredator(i):
 	for boid in _boids:
 		var dist = boid.get_position().distance_to(i.get_position())
 		if (dist < boidData.predatorMinDist):
 			var dir = (boid.get_position() - i.get_position()).normalized()
-			var multiplier = sqrt(1 - (dist / boidData.predatorMinDist))
+			var multiplier = sqrt(1 - (dist / boidData.predatorMinDist)) * i.mul
 			boid.acceleration += dir * multiplier * boidData.predatorWeight / ($Avoiders.get_children().size())
+
+
+##DEBUHHGGGG

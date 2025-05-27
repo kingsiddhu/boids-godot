@@ -1,8 +1,11 @@
-[gd_scene load_steps=8 format=3 uid="uid://dry4n2alw8f6c"]
+[gd_scene load_steps=14 format=3 uid="uid://dry4n2alw8f6c"]
 
 [ext_resource type="Script" uid="uid://t6136j2ir5il" path="res://Assets/boidSpawner.gd" id="1_h4bx0"]
-[ext_resource type="PackedScene" uid="uid://bpfru02q8e6wo" path="res://Assets/boid.tscn" id="2_8bnh4"]
-[ext_resource type="Script" uid="uid://bkuxrdlc6ng6h" path="res://Assets/boidResource.gd" id="3_t41lc"]
+[ext_resource type="PackedScene" uid="uid://bpfru02q8e6wo" path="res://Assets/boid.tscn" id="2_870tr"]
+[ext_resource type="Script" uid="uid://bkuxrdlc6ng6h" path="res://Assets/boidResource.gd" id="2_cdoht"]
+[ext_resource type="Script" uid="uid://bqs1knj2ygjje" path="res://Assets/avoidermarker.gd" id="4_cdoht"]
+[ext_resource type="Script" uid="uid://dwj8q0bub5143" path="res://Assets/cam.gd" id="4_l1les"]
+[ext_resource type="Script" uid="uid://daxa0duq2kva4" path="res://Assets/debug.gd" id="5_870tr"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_5we7w"]
 sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
@@ -12,25 +15,37 @@ ground_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
 sky_material = SubResource("ProceduralSkyMaterial_5we7w")
 
 [sub_resource type="Environment" id="Environment_h4bx0"]
-background_mode = 2
+background_mode = 1
 sky = SubResource("Sky_fejey")
+ambient_light_source = 2
+ambient_light_color = Color(1, 1, 1, 1)
 tonemap_mode = 2
 glow_enabled = true
 
-[sub_resource type="Resource" id="Resource_kbw8a"]
-script = ExtResource("3_t41lc")
-boidScene = ExtResource("2_8bnh4")
-visualRange = 30.0
-separationDistance = 80.0
+[sub_resource type="Resource" id="Resource_870tr"]
+script = ExtResource("2_cdoht")
+boidScene = ExtResource("2_870tr")
+visualRange = 3.0
+separationDistance = 8.0
 predatorMinDist = 30.0
 cohesionWeight = 0.3
-separationWeight = 50.0
+separationWeight = 5.0
 alignmentWeight = 1.0
 bordersWeight = 30.0
 predatorWeight = 50.0
-maxVelocity = 30.0
+randomnessFactor = 10.0
+maxVelocity = 28.0
 maxAcceleration = 100.0
 metadata/_custom_type_script = "uid://bkuxrdlc6ng6h"
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_cdoht"]
+radius = 20.0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_cdoht"]
+size = Vector3(95.4827, 27.4691, 103.775)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_870tr"]
+size = Vector3(85.9344, 24.7222, 93.3975)
 
 [node name="Main3_0" type="Node3D"]
 
@@ -42,9 +57,9 @@ transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75
 shadow_enabled = true
 
 [node name="VisibleOnScreenNotifier3D" type="VisibleOnScreenNotifier3D" parent="."]
-aabb = AABB(-82, -79, -77.1514, 164, 158, 154.303)
+aabb = AABB(-47.7413, -13.7346, -51.8875, 95.4827, 27.4691, 103.775)
 script = ExtResource("1_h4bx0")
-boidData = SubResource("Resource_kbw8a")
+boidData = SubResource("Resource_870tr")
 numberOfBoids = 100
 
 [node name="Boids" type="Node3D" parent="VisibleOnScreenNotifier3D"]
@@ -52,8 +67,33 @@ numberOfBoids = 100
 [node name="Avoiders" type="Node3D" parent="VisibleOnScreenNotifier3D"]
 
 [node name="Marker3D" type="Marker3D" parent="VisibleOnScreenNotifier3D/Avoiders"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.7762, 0, 61.2183)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.4001, 0, 20.7663)
 gizmo_extents = 10.0
+script = ExtResource("4_cdoht")
+mul = 20.0
 
-[node name="Camera3D" type="Camera3D" parent="."]
+[node name="Area3D" type="Area3D" parent="VisibleOnScreenNotifier3D/Avoiders/Marker3D"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="VisibleOnScreenNotifier3D/Avoiders/Marker3D/Area3D"]
+shape = SubResource("SphereShape3D_cdoht")
+
+[node name="DEBUG" type="Node3D" parent="VisibleOnScreenNotifier3D"]
+script = ExtResource("5_870tr")
+
+[node name="Area3D" type="Area3D" parent="VisibleOnScreenNotifier3D/DEBUG"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="VisibleOnScreenNotifier3D/DEBUG/Area3D"]
+shape = SubResource("BoxShape3D_cdoht")
+debug_color = Color(0.67451, 0.388235, 0.835294, 0.211765)
+
+[node name="Area3D2" type="Area3D" parent="VisibleOnScreenNotifier3D/DEBUG"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="VisibleOnScreenNotifier3D/DEBUG/Area3D2"]
+shape = SubResource("BoxShape3D_870tr")
+debug_color = Color(0.678431, 0.505882, 0, 0.172549)
+
+[node name="Node3D" type="Node3D" parent="."]
+script = ExtResource("4_l1les")
+
+[node name="Camera3D" type="Camera3D" parent="Node3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 132.331)
