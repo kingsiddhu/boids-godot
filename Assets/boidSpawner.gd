@@ -1,3 +1,4 @@
+@tool
 extends VisibleOnScreenNotifier3D
 
 @export var boidData : Boid
@@ -9,44 +10,74 @@ var _avoiders = []
 
 
 @export var bordermag : float = .9
-@onready var enve = aabb.position
-@onready var epve = aabb.size + enve
+@onready var enve := aabb.position
+@onready var epve := aabb.size + enve
 
-@onready var bsafen = enve * bordermag 
-@onready var bsafep = epve * bordermag 
+@onready var bsafen := enve * bordermag 
+@onready var bsafep := epve * bordermag 
+@onready var thread : Thread = Thread.new()
+
+@export var debug : bool = false:
+	get:
+		return debug
+	set(val):
+		
+		$DEBUG.visible = val
+		debug = val
+@export var update : bool = false:
+	get:
+		return update
+	set(val):
+		print(val)
+		update = false
+		$DEBUG/Area3D/CollisionShape3D.shape.size = aabb.size
+		$DEBUG/Area3D2/CollisionShape3D.shape.size = aabb.size *bordermag
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	prints(enve,epve)
-	randomize()
-	
-	for i in range(numberOfBoids):
-		var instance = boidData.boidScene.instantiate()
-		$Boids.add_child(instance)
-		_boids.append(instance)
-		instance.set_position( Vector3(
-			randf_range(aabb.position.x, aabb.size.x+aabb.position.x),
-			randf_range(aabb.position.y, aabb.size.y+aabb.position.y),
-			randf_range(aabb.position.z, aabb.size.z+aabb.position.z)
-		))
-		instance.Parent = self
-		instance.maxVelocity = boidData.maxVelocity
-		instance.maxAcceleration = boidData.maxAcceleration
+	if not Engine.is_editor_hint():
+		_avoiders = $Avoiders.get_children()
+		prints(enve,epve)
+		randomize()
+		
+		for i in range(numberOfBoids):
+			var instance = boidData.boidScene.instantiate()
+			$Boids.add_child(instance)
+			_boids.append(instance)
+			instance.set_position( Vector3(
+				randf_range(aabb.position.x, aabb.size.x+aabb.position.x),
+				randf_range(aabb.position.y, aabb.size.y+aabb.position.y),
+				randf_range(aabb.position.z, aabb.size.z+aabb.position.z)
+			))
+			instance.Parent = self
+			instance.maxVelocity = boidData.maxVelocity
+			instance.maxAcceleration = boidData.maxAcceleration
 
 func _process(delta):
+	if not Engine.is_editor_hint():
+		if is_on_screen():
+			#thread.start(_run.bind(delta, $Avoiders.get_children()))
+			_run(delta)
+
+func _run(delta):
+	_detectNeighbors()
+	_cohesion()
+	_separation()
+	_alignment()
+	_randomness()
+	_borders(delta)
+	for i in _avoiders:
+		_escapePredator(i)
 	
-	
-	if is_on_screen():
-		_detectNeighbors()
-	
-		_cohesion()	
-		_separation()
-		_alignment()
-		_randomness()
-		_borders(delta)
-		for i in $Avoiders.get_children():
-			_escapePredator(i)
+	#call_deferred("_detectNeighbors")
+	#call_deferred("_cohesion")
+	#call_deferred("_separation")
+	#call_deferred("_alignment")
+	#call_deferred("_randomness")
+	#call_deferred("_borders", delta)
+	#for i in _avoiders:
+	#	call_deferred("_escapePredator",i)
 
 func _detectNeighbors():
 	for i in range(_boids.size()):
@@ -76,7 +107,6 @@ func _cohesion():
 		
 		var direction = averagePos - _boids[i].get_position()
 		_boids[i].acceleration += direction * boidData.cohesionWeight
-
 func _separation():
 	for i in range(_boids.size()):
 		var neighbors = _boids[i].neighbors
@@ -93,7 +123,6 @@ func _separation():
 			var direction = _boids[i].get_position() - neighbors[j].get_position()
 			direction = direction.normalized()
 			_boids[i].acceleration += direction * distMultiplier * boidData.separationWeight
-			
 func _alignment():
 	for i in range(_boids.size()):
 		var neighbors = _boids[i].neighbors
@@ -107,7 +136,10 @@ func _alignment():
 		averageVel /= neighbors.size()
 		
 		_boids[i].acceleration += averageVel * boidData.alignmentWeight
-
+func _randomness():
+	randomize()
+	for boid in _boids:
+		boid.acceleration += Vector3(randf_range(-1,1),randf_range(-1,1),randf_range(-1,1)).normalized() * boidData.randomnessFactor
 
 func _borders(delta):
 	for boid in _boids:
@@ -142,19 +174,12 @@ func _borders(delta):
 			boid.acceleration += dir * boid.timeOutOfBorders * boidData.bordersWeight
 		else:
 			boid.timeOutOfBorders = 0
-
-func _randomness():
-	randomize()
-	for boid in _boids:
-		boid.acceleration += Vector3(randf_range(-1,1),randf_range(-1,1),randf_range(-1,1)).normalized() * boidData.randomnessFactor
-
 func _escapePredator(i):
 	for boid in _boids:
 		var dist = boid.get_position().distance_to(i.get_position())
 		if (dist < boidData.predatorMinDist):
 			var dir = (boid.get_position() - i.get_position()).normalized()
 			var multiplier = sqrt(1 - (dist / boidData.predatorMinDist)) * i.mul
-			boid.acceleration += dir * multiplier * boidData.predatorWeight / ($Avoiders.get_children().size())
-
-
-##DEBUHHGGGG
+			boid.acceleration += dir * multiplier * boidData.predatorWeight / (_avoiders.size())
+func _exit_tree() -> void:
+	thread.wait_to_finish()

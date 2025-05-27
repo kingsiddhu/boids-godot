@@ -4,7 +4,7 @@
 
 [sub_resource type="SphereMesh" id="SphereMesh_ysevq"]
 
-[node name="RigidBody3D" type="Node3D"]
+[node name="Boid" type="Node3D"]
 script = ExtResource("1_nxohh")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
