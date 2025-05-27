@@ -17,13 +17,6 @@ var _avoiders = []
 @onready var bsafep := epve * bordermag 
 @onready var thread : Thread = Thread.new()
 
-@export var debug : bool = false:
-	get:
-		return debug
-	set(val):
-		
-		$DEBUG.visible = val
-		debug = val
 @export var update : bool = false:
 	get:
 		return update
@@ -181,5 +174,15 @@ func _escapePredator(i):
 			var dir = (boid.get_position() - i.get_position()).normalized()
 			var multiplier = sqrt(1 - (dist / boidData.predatorMinDist)) * i.mul
 			boid.acceleration += dir * multiplier * boidData.predatorWeight / (_avoiders.size())
+
 func _exit_tree() -> void:
 	thread.wait_to_finish()
+
+
+func _on_area_3d_body_entered(body: Node3D) -> void:
+	if body.is_in_group("Avoider_boid"):
+		_avoiders.append(body)
+
+func _on_area_3d_body_exited(body: Node3D) -> void:
+	if body.is_in_group("Avoider_boid"):
+		_avoiders.erase(body)

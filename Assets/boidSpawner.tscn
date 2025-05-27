@@ -1,0 +1,56 @@
+[gd_scene load_steps=7 format=3 uid="uid://bru0yqvf86m27"]
+
+[ext_resource type="Script" uid="uid://t6136j2ir5il" path="res://Assets/boidSpawner.gd" id="1_ty3wl"]
+[ext_resource type="PackedScene" uid="uid://bpfru02q8e6wo" path="res://Assets/boid.tscn" id="2_ma12r"]
+[ext_resource type="Script" uid="uid://bkuxrdlc6ng6h" path="res://Assets/boidResource.gd" id="3_01ehb"]
+
+[sub_resource type="Resource" id="Resource_870tr"]
+script = ExtResource("3_01ehb")
+boidScene = ExtResource("2_ma12r")
+visualRange = 3.0
+separationDistance = 8.0
+predatorMinDist = 30.0
+cohesionWeight = 0.3
+separationWeight = 5.0
+alignmentWeight = 1.0
+bordersWeight = 30.0
+predatorWeight = 50.0
+randomnessFactor = 10.0
+maxVelocity = 28.0
+maxAcceleration = 100.0
+metadata/_custom_type_script = "uid://bkuxrdlc6ng6h"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_cdoht"]
+size = Vector3(95.4827, 69.6707, 103.775)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_870tr"]
+size = Vector3(85.9344, 62.7036, 93.3975)
+
+[node name="boidSpawner" type="VisibleOnScreenNotifier3D"]
+aabb = AABB(-47.7413, -34.8354, -51.8875, 95.4827, 69.6707, 103.775)
+script = ExtResource("1_ty3wl")
+boidData = SubResource("Resource_870tr")
+numberOfBoids = 100
+
+[node name="Boids" type="Node3D" parent="."]
+
+[node name="Avoiders" type="Node3D" parent="."]
+
+[node name="DEBUG" type="Node3D" parent="."]
+
+[node name="Area3D" type="Area3D" parent="DEBUG"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DEBUG/Area3D"]
+shape = SubResource("BoxShape3D_cdoht")
+debug_color = Color(0.67451, 0.388235, 0.835294, 0.211765)
+
+[node name="Area3D2" type="Area3D" parent="DEBUG"]
+collision_layer = 0
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DEBUG/Area3D2"]
+shape = SubResource("BoxShape3D_870tr")
+debug_color = Color(0, 0.557824, 0.899304, 0.172549)
+
+[connection signal="body_entered" from="DEBUG/Area3D" to="." method="_on_area_3d_body_entered"]
+[connection signal="body_exited" from="DEBUG/Area3D" to="." method="_on_area_3d_body_exited"]

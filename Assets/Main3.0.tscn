@@ -1,9 +1,6 @@
-[gd_scene load_steps=13 format=3 uid="uid://dry4n2alw8f6c"]
+[gd_scene load_steps=7 format=3 uid="uid://dry4n2alw8f6c"]
 
-[ext_resource type="Script" uid="uid://t6136j2ir5il" path="res://Assets/boidSpawner.gd" id="1_h4bx0"]
-[ext_resource type="PackedScene" uid="uid://bpfru02q8e6wo" path="res://Assets/boid.tscn" id="2_870tr"]
-[ext_resource type="Script" uid="uid://bkuxrdlc6ng6h" path="res://Assets/boidResource.gd" id="2_cdoht"]
-[ext_resource type="PackedScene" uid="uid://6vafswhl2mg2" path="res://Avoider.tscn" id="4_cdoht"]
+[ext_resource type="PackedScene" uid="uid://bru0yqvf86m27" path="res://Assets/boidSpawner.tscn" id="1_bdxne"]
 [ext_resource type="Script" uid="uid://dwj8q0bub5143" path="res://Assets/cam.gd" id="4_l1les"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_5we7w"]
@@ -21,30 +18,8 @@ ambient_light_color = Color(1, 1, 1, 1)
 tonemap_mode = 2
 glow_enabled = true
 
-[sub_resource type="Resource" id="Resource_870tr"]
-script = ExtResource("2_cdoht")
-boidScene = ExtResource("2_870tr")
-visualRange = 3.0
-separationDistance = 8.0
-predatorMinDist = 30.0
-cohesionWeight = 0.3
-separationWeight = 5.0
-alignmentWeight = 1.0
-bordersWeight = 30.0
-predatorWeight = 50.0
-randomnessFactor = 10.0
-maxVelocity = 28.0
-maxAcceleration = 100.0
-metadata/_custom_type_script = "uid://bkuxrdlc6ng6h"
-
-[sub_resource type="SphereShape3D" id="SphereShape3D_cdoht"]
+[sub_resource type="SphereShape3D" id="SphereShape3D_bdxne"]
 radius = 16.87
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_cdoht"]
-size = Vector3(95.4827, 69.6707, 103.775)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_870tr"]
-size = Vector3(85.9344, 62.7036, 93.3975)
 
 [node name="Main3_0" type="Node3D"]
 
@@ -55,36 +30,10 @@ environment = SubResource("Environment_h4bx0")
 transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 0, 0, 0)
 shadow_enabled = true
 
-[node name="VisibleOnScreenNotifier3D" type="VisibleOnScreenNotifier3D" parent="."]
-aabb = AABB(-47.7413, -34.8354, -51.8875, 95.4827, 69.6707, 103.775)
-script = ExtResource("1_h4bx0")
-boidData = SubResource("Resource_870tr")
-numberOfBoids = 100
+[node name="boidSpawner" parent="." instance=ExtResource("1_bdxne")]
 
-[node name="Boids" type="Node3D" parent="VisibleOnScreenNotifier3D"]
-
-[node name="Avoiders" type="Node3D" parent="VisibleOnScreenNotifier3D"]
-
-[node name="Marker3D" parent="VisibleOnScreenNotifier3D/Avoiders" instance=ExtResource("4_cdoht")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.6835, 0, 48.6681)
-mul = 16.87
-
-[node name="CollisionShape3D" parent="VisibleOnScreenNotifier3D/Avoiders/Marker3D/Area3D" index="0"]
-shape = SubResource("SphereShape3D_cdoht")
-
-[node name="DEBUG" type="Node3D" parent="VisibleOnScreenNotifier3D"]
-
-[node name="Area3D" type="Area3D" parent="VisibleOnScreenNotifier3D/DEBUG"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="VisibleOnScreenNotifier3D/DEBUG/Area3D"]
-shape = SubResource("BoxShape3D_cdoht")
-debug_color = Color(0.67451, 0.388235, 0.835294, 0.211765)
-
-[node name="Area3D2" type="Area3D" parent="VisibleOnScreenNotifier3D/DEBUG"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="VisibleOnScreenNotifier3D/DEBUG/Area3D2"]
-shape = SubResource("BoxShape3D_870tr")
-debug_color = Color(0, 0.557824, 0.899304, 0.172549)
+[node name="CollisionShape3D" parent="boidSpawner/Avoiders/Marker3D/Area3D" index="0"]
+shape = SubResource("SphereShape3D_bdxne")
 
 [node name="Node3D" type="Node3D" parent="."]
 script = ExtResource("4_l1les")
@@ -92,4 +41,5 @@ script = ExtResource("4_l1les")
 [node name="Camera3D" type="Camera3D" parent="Node3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 132.331)
 
-[editable path="VisibleOnScreenNotifier3D/Avoiders/Marker3D"]
+[editable path="boidSpawner"]
+[editable path="boidSpawner/Avoiders/Marker3D"]
