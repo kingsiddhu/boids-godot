@@ -3,7 +3,7 @@
 
 ### Prerequisites
 You need [Godot](https://godotengine.org/download).
-This was made in 4.4 although you can copy the nessessary files to older versions.\
+Although this was made in 4.4, you can copy the nessessary files to older versions.\
 Note: The code may break when opened in an older version
 
 ### Installing
