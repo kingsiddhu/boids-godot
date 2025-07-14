@@ -1,0 +1,85 @@
+[gd_scene load_steps=12 format=3 uid="uid://dry4n2alw8f6c"]
+
+[ext_resource type="PackedScene" uid="uid://bru0yqvf86m27" path="res://Assets/boidSpawner.tscn" id="1_ydbo0"]
+[ext_resource type="PackedScene" uid="uid://bpfru02q8e6wo" path="res://Assets/boid.tscn" id="2_6mrne"]
+[ext_resource type="PackedScene" uid="uid://6vafswhl2mg2" path="res://Assets/Avoider.tscn" id="2_o37yf"]
+[ext_resource type="Script" uid="uid://dwj8q0bub5143" path="res://Assets/demoStuff/cam.gd" id="3_6mrne"]
+[ext_resource type="Script" uid="uid://bkuxrdlc6ng6h" path="res://Assets/boidResource.gd" id="3_cr223"]
+[ext_resource type="ArrayMesh" uid="uid://d4awrjrqgxauf" path="res://Assets/demoStuff/Terrain.obj" id="4_cr223"]
+[ext_resource type="Shape3D" uid="uid://df76e1vgnbfy0" path="res://Assets/demoStuff/Terrain0.shape" id="7_cr223"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_5we7w"]
+sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
+ground_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
+
+[sub_resource type="Sky" id="Sky_fejey"]
+sky_material = SubResource("ProceduralSkyMaterial_5we7w")
+
+[sub_resource type="Environment" id="Environment_h4bx0"]
+background_mode = 1
+sky = SubResource("Sky_fejey")
+ambient_light_source = 2
+ambient_light_color = Color(1, 1, 1, 1)
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="Resource" id="Resource_uu4b6"]
+script = ExtResource("3_cr223")
+boidScene = ExtResource("2_6mrne")
+visualRange = 3.0
+separationDistance = 8.0
+predatorMinDist = 30.0
+cohesionWeight = 0.1
+separationWeight = 5.0
+alignmentWeight = 1.0
+bordersWeight = 30.0
+predatorWeight = 50.0
+randomnessFactor = 10.0
+maxVelocity = 28.0
+maxAcceleration = 100.0
+metadata/_custom_type_script = "uid://bkuxrdlc6ng6h"
+
+[node name="Main3_0" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_h4bx0")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 0, 0, 0)
+shadow_enabled = true
+
+[node name="boidSpawner" parent="." instance=ExtResource("1_ydbo0")]
+aabb = AABB(-120.885, -99.7987, -169.932, 241.77, 199.597, 339.864)
+boidData = SubResource("Resource_uu4b6")
+
+[node name="Marker3D" parent="boidSpawner/Avoiders" index="0" instance=ExtResource("2_o37yf")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 38.7513)
+mul = 30.0
+
+[node name="RayCast3D" parent="boidSpawner" index="2"]
+target_position = Vector3(0, -231.192, 0)
+
+[node name="Master" parent="boidSpawner/DEBUG" index="0"]
+collision_mask = 0
+
+[node name="Node3D" type="Node3D" parent="."]
+script = ExtResource("3_6mrne")
+
+[node name="Camera3D" type="Camera3D" parent="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 132.331)
+size = 86.713
+
+[node name="Marker3D" type="Marker3D" parent="Node3D"]
+gizmo_extents = 7.9
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(48.115, 0, 0, 0, 48.115, 0, 0, 0, 48.115, 0, -25.3183, 0)
+transparency = 0.89
+mesh = ExtResource("4_cr223")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/StaticBody3D"]
+shape = ExtResource("7_cr223")
+
+[editable path="boidSpawner"]

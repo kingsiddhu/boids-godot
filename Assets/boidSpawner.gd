@@ -7,29 +7,45 @@ extends VisibleOnScreenNotifier3D
 
 var _boids = []
 var _avoiders = []
+var _terrain = []
 
 
 @export var bordermag : float = .9
-@onready var enve := aabb.position
-@onready var epve := aabb.size + enve
+@onready var enve := aabb.position     #-ve min box
+@onready var epve := aabb.size + enve  #+ve max box
 
-@onready var bsafen := enve * bordermag 
-@onready var bsafep := epve * bordermag 
+@onready var bsafen := enve * bordermag #-ve warning zone
+@onready var bsafep := epve * bordermag #+ve warning zone
+
+@onready var bTn := enve * .5 #-ve Terrain search
+@onready var bTp := epve * .5 #+ve Terrain search
+
+const midPoint = Vector3.ZERO
+var raylen :int
+var frame : int
+var frameskip : int
+var oldframeskip:int
+
 @onready var thread : Thread = Thread.new()
-
+@export_flags_3d_physics var AvoiderMask :int = 0:
+	get:
+		return AvoiderMask
+	set(val):
+		$DEBUG/Master.collision_mask = val
 @export var update : bool = false:
 	get:
 		return update
 	set(val):
-		print(val)
 		update = false
-		$DEBUG/Area3D/CollisionShape3D.shape.size = aabb.size
-		$DEBUG/Area3D2/CollisionShape3D.shape.size = aabb.size *bordermag
-
-
+		$DEBUG/Master/CollisionShape3D.shape.size = aabb.size
+		$DEBUG/OuterLimit/CollisionShape3D.shape.size = aabb.size *bordermag
+		$DEBUG/BorderCheck/CollisionShape3D.shape.size = aabb.size *.5
+		$RayCast3D.target_position = Vector3(0,-enve.distance_to(Vector3.ZERO),0)
+@export var debug:bool
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	if not Engine.is_editor_hint():
+		
 		_avoiders = $Avoiders.get_children()
 		prints(enve,epve)
 		randomize()
@@ -46,22 +62,33 @@ func _ready():
 			instance.Parent = self
 			instance.maxVelocity = boidData.maxVelocity
 			instance.maxAcceleration = boidData.maxAcceleration
+	$RayCast3D.target_position = Vector3(0,-enve.distance_to(Vector3.ZERO),0)
+	raylen=enve.distance_to(Vector3.ZERO)
+	update = true
 
 func _process(delta):
 	if not Engine.is_editor_hint():
 		if is_on_screen():
-			#thread.start(_run.bind(delta, $Avoiders.get_children()))
-			_run(delta)
-
+			frame+=1
+			frameskip = int(0.01*get_viewport().get_camera_3d().global_position.distance_to(global_position))**1.5
+			#prints(frame,frameskip)
+			if frame>=frameskip:
+				#thread.start(_run.bind(delta, $Avoiders.get_children()))
+				_run(delta)
+				frame = 0
+				oldframeskip = frameskip
+			
 func _run(delta):
+	
+	for i in _avoiders:
+		_escapePredator(i)
 	_detectNeighbors()
 	_cohesion()
 	_separation()
 	_alignment()
 	_randomness()
+	_detectTerrain()
 	_borders(delta)
-	for i in _avoiders:
-		_escapePredator(i)
 	
 	#call_deferred("_detectNeighbors")
 	#call_deferred("_cohesion")
@@ -74,6 +101,7 @@ func _run(delta):
 
 func _detectNeighbors():
 	for i in range(_boids.size()):
+		_boids[i].frameskip = frameskip
 		_boids[i].neighbors.clear()
 		_boids[i].neighborsDistances.clear()
 	
@@ -85,7 +113,29 @@ func _detectNeighbors():
 				_boids[j].neighbors.append(_boids[i])
 				_boids[i].neighborsDistances.append(distance)
 				_boids[j].neighborsDistances.append(distance)
-
+func _detectTerrain():
+	for boid in _boids:
+		var pos :Vector3= boid.position
+		if ((pos.x < bTn.x or pos.x > bTp.x) or 
+			(pos.y < bTn.y or pos.y > bTp.y) or
+			(pos.z < bTn.z or pos.z > bTp.z)):
+			var dir :Vector3= (midPoint - pos).normalized()
+			#$RayCast3D.look_at(dir )
+			$RayCast3D.target_position = -dir * raylen
+			$RayCast3D.force_raycast_update()
+			if $RayCast3D.is_colliding():
+				var colpoint :Vector3= $RayCast3D.get_collision_point()
+				
+				if pos.distance_to(midPoint)>colpoint.distance_to(midPoint)*.9:
+					#prints(colpoint.y, pos.y, )
+					if debug:
+						var deb = CSGBox3D.new()
+						deb.position = colpoint
+						add_child(deb)
+					$RayCast3D.debug_shape_custom_color = Color("ffffff")
+					boid.acceleration += dir
+				else:
+					$RayCast3D.debug_shape_custom_color = Color("ffff00")
 func _cohesion():
 	for i in range(_boids.size()):
 		var neighbors = _boids[i].neighbors
@@ -170,13 +220,14 @@ func _borders(delta):
 func _escapePredator(i):
 	for boid in _boids:
 		var dist = boid.get_position().distance_to(i.get_position())
-		if (dist < boidData.predatorMinDist):
+		if (dist < min(i.mul,boidData.predatorMinDist)):
 			var dir = (boid.get_position() - i.get_position()).normalized()
-			var multiplier = sqrt(1 - (dist / boidData.predatorMinDist)) * i.mul
+			var multiplier = sqrt((1 - (dist / boidData.predatorMinDist))) 
 			boid.acceleration += dir * multiplier * boidData.predatorWeight / (_avoiders.size())
 
 func _exit_tree() -> void:
-	thread.wait_to_finish()
+	if not Engine.is_editor_hint():
+		thread.wait_to_finish()
 
 
 func _on_area_3d_body_entered(body: Node3D) -> void:
@@ -186,3 +237,10 @@ func _on_area_3d_body_entered(body: Node3D) -> void:
 func _on_area_3d_body_exited(body: Node3D) -> void:
 	if body.is_in_group("Avoider_boid"):
 		_avoiders.erase(body)
+
+
+func _on_property_list_changed() -> void:
+	$DEBUG/Master/CollisionShape3D.shape.size = aabb.size
+	$DEBUG/OuterLimit/CollisionShape3D.shape.size = aabb.size *bordermag
+	$DEBUG/BorderCheck/CollisionShape3D.shape.size = aabb.size *.5
+	$RayCast3D.target_position = Vector3(0,-enve.distance_to(Vector3.ZERO),0)

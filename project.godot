@@ -13,7 +13,12 @@ config_version=5
 config/name="Boids"
 run/main_scene="uid://dry4n2alw8f6c"
 config/features=PackedStringArray("4.4", "Forward Plus")
+run/max_fps=30
 config/icon="res://icon.svg"
+
+[display]
+
+window/vsync/vsync_mode=0
 
 [dotnet]
 

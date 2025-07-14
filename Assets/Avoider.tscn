@@ -2,7 +2,8 @@
 
 [ext_resource type="Script" uid="uid://bqs1knj2ygjje" path="res://Assets/avoidermarker.gd" id="1_l7jnd"]
 
-[sub_resource type="SphereShape3D" id="SphereShape3D_l7jnd"]
+[sub_resource type="SphereShape3D" id="SphereShape3D_fgkb6"]
+radius = 1.0
 
 [node name="Marker3D" type="Marker3D"]
 gizmo_extents = 10.0
@@ -13,5 +14,5 @@ collision_layer = 0
 collision_mask = 0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
-shape = SubResource("SphereShape3D_l7jnd")
-debug_color = Color(0, 0.646967, 0.223719, 0.42)
+shape = SubResource("SphereShape3D_fgkb6")
+debug_color = Color(0, 0.647059, 0.223529, 1)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://bru0yqvf86m27"]
+[gd_scene load_steps=8 format=3 uid="uid://bru0yqvf86m27"]
 
 [ext_resource type="Script" uid="uid://t6136j2ir5il" path="res://Assets/boidSpawner.gd" id="1_ty3wl"]
 [ext_resource type="PackedScene" uid="uid://bpfru02q8e6wo" path="res://Assets/boid.tscn" id="2_ma12r"]
@@ -26,6 +26,9 @@ size = Vector3(95.4827, 69.6707, 103.775)
 [sub_resource type="BoxShape3D" id="BoxShape3D_870tr"]
 size = Vector3(85.9344, 62.7036, 93.3975)
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_qqdmh"]
+size = Vector3(47.7413, 34.8354, 51.8875)
+
 [node name="boidSpawner" type="VisibleOnScreenNotifier3D"]
 aabb = AABB(-47.7413, -34.8354, -51.8875, 95.4827, 69.6707, 103.775)
 script = ExtResource("1_ty3wl")
@@ -36,21 +39,39 @@ numberOfBoids = 100
 
 [node name="Avoiders" type="Node3D" parent="."]
 
+[node name="RayCast3D" type="RayCast3D" parent="."]
+target_position = Vector3(0, -78.6451, 0)
+
 [node name="DEBUG" type="Node3D" parent="."]
 
-[node name="Area3D" type="Area3D" parent="DEBUG"]
+[node name="Master" type="Area3D" parent="DEBUG"]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="DEBUG/Area3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DEBUG/Master"]
 shape = SubResource("BoxShape3D_cdoht")
 debug_color = Color(0.67451, 0.388235, 0.835294, 0.211765)
 
-[node name="Area3D2" type="Area3D" parent="DEBUG"]
+[node name="OuterLimit" type="Area3D" parent="DEBUG"]
+visible = false
 collision_layer = 0
 collision_mask = 0
+monitoring = false
+monitorable = false
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="DEBUG/Area3D2"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DEBUG/OuterLimit"]
 shape = SubResource("BoxShape3D_870tr")
 debug_color = Color(0, 0.557824, 0.899304, 0.172549)
 
-[connection signal="body_entered" from="DEBUG/Area3D" to="." method="_on_area_3d_body_entered"]
-[connection signal="body_exited" from="DEBUG/Area3D" to="." method="_on_area_3d_body_exited"]
+[node name="BorderCheck" type="Area3D" parent="DEBUG"]
+visible = false
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DEBUG/BorderCheck"]
+shape = SubResource("BoxShape3D_qqdmh")
+debug_color = Color(0, 0.557824, 0.899304, 0.172549)
+
+[connection signal="editor_state_changed" from="." to="." method="_on_property_list_changed"]
+[connection signal="body_entered" from="DEBUG/Master" to="." method="_on_area_3d_body_entered"]
+[connection signal="body_exited" from="DEBUG/Master" to="." method="_on_area_3d_body_exited"]
