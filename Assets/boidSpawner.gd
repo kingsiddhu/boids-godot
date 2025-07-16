@@ -82,13 +82,15 @@ func _run(delta):
 	
 	for i in _avoiders:
 		_escapePredator(i)
-	_detectNeighbors()
-	_cohesion()
-	_separation()
-	_alignment()
-	_randomness()
-	_detectTerrain()
-	_borders(delta)
+	for i in range(_boids.size()):
+		var boid:Boid = _boids[i]
+		_detectNeighbors(boid,i)
+		_cohesion(boid)
+		_separation(boid)
+		_alignment(boid)
+		_randomness(boid)
+		_detectTerrain(boid)
+		_borders(boid,delta)
 	
 	#call_deferred("_detectNeighbors")
 	#call_deferred("_cohesion")
@@ -99,95 +101,86 @@ func _run(delta):
 	#for i in _avoiders:
 	#	call_deferred("_escapePredator",i)
 
-func _detectNeighbors():
-	for i in range(_boids.size()):
-		_boids[i].frameskip = frameskip
-		_boids[i].neighbors.clear()
-		_boids[i].neighborsDistances.clear()
-	
-	for i in range(_boids.size()):		
-		for j in range(i+1, _boids.size()):
-			var distance = _boids[i].get_position().distance_to(_boids[j].get_position())
-			if (distance <= boidData.visualRange):
-				_boids[i].neighbors.append(_boids[j])
-				_boids[j].neighbors.append(_boids[i])
-				_boids[i].neighborsDistances.append(distance)
-				_boids[j].neighborsDistances.append(distance)
-func _detectTerrain():
-	for boid in _boids as Array[Boid]:
-		var pos :Vector3= boid.position
-		if ((pos.x < bTn.x or pos.x > bTp.x) or 
-			(pos.y < bTn.y or pos.y > bTp.y) or
-			(pos.z < bTn.z or pos.z > bTp.z)):
-			var dir :Vector3= (midPoint - pos).normalized()
-			#$RayCast3D.look_at(dir )
-			$RayCast3D.target_position = -dir * raylen
-			$RayCast3D.force_raycast_update()
-			if $RayCast3D.is_colliding():
-				var colpoint :Vector3= $RayCast3D.get_collision_point()
-				
-				if pos.distance_to(midPoint)>colpoint.distance_to(midPoint)*bordermag:
-					#prints(colpoint.y, pos.y, )
-					if debug and pos.distance_to(midPoint)>colpoint.distance_to(midPoint): #Phasing
-						var deb = CSGBox3D.new()
-						deb.position = colpoint
-						add_child(deb)
-					$RayCast3D.debug_shape_custom_color = Color("ffffff")
-					#boid.velocity /=2*get_physics_process_delta_time()
-					boid.acceleration += dir * boidData.terrainAvoidness
-					boid.velocity = $RayCast3D.get_collision_normal() * boid.velocity.length()  #dir * boidData.terrainAvoidness
-				else:
-					$RayCast3D.debug_shape_custom_color = Color("ffff00")
-func _cohesion():
-	for i in range(_boids.size()):
-		var neighbors = _boids[i].neighbors
+func _detectNeighbors(boid:Boid,i):
+	boid.frameskip = frameskip
+	boid.neighbors.clear()
+	boid.neighborsDistances.clear()
+
+	for j in range(i+1, _boids.size()):
+		var distance = boid.get_position().distance_to(_boids[j].get_position())
+		if (distance <= boidData.visualRange):
+			boid.neighbors.append(_boids[j])
+			_boids[j].neighbors.append(boid)
+			boid.neighborsDistances.append(distance)
+			_boids[j].neighborsDistances.append(distance)
+func _detectTerrain(boid: Boid):
+	var pos :Vector3= boid.position
+	if ((pos.x < bTn.x or pos.x > bTp.x) or 
+		(pos.y < bTn.y or pos.y > bTp.y) or
+		(pos.z < bTn.z or pos.z > bTp.z)):
+		var dir :Vector3= (midPoint - pos).normalized()
+		#$RayCast3D.look_at(dir )
+		$RayCast3D.target_position = -dir * raylen
+		$RayCast3D.force_raycast_update()
+		if $RayCast3D.is_colliding():
+			var colpoint :Vector3= $RayCast3D.get_collision_point()
+			
+			if pos.distance_to(midPoint)>colpoint.distance_to(midPoint)*bordermag:
+				#prints(colpoint.y, pos.y, )
+				if debug and pos.distance_to(midPoint)>colpoint.distance_to(midPoint): #Phasing
+					var deb = CSGBox3D.new()
+					deb.position = colpoint
+					add_child(deb)
+				$RayCast3D.debug_shape_custom_color = Color("ffffff")
+				#boid.velocity /=2*get_physics_process_delta_time()
+				boid.acceleration += dir * boidData.terrainAvoidness
+				boid.velocity = $RayCast3D.get_collision_normal() * boid.velocity.length()  #dir * boidData.terrainAvoidness
+			else:
+				$RayCast3D.debug_shape_custom_color = Color("ffff00")
+func _cohesion(boid:Boid):
+		var neighbors = boid.neighbors
 		
 		if (neighbors.is_empty()):
-			continue;
+			return
 		
 		var averagePos = Vector3(0,0,0)
 		for closeBoid in neighbors:
 			averagePos += closeBoid.get_position()
 		averagePos /= neighbors.size()
 		
-		var direction = averagePos - _boids[i].get_position()
-		_boids[i].acceleration += direction * boidData.cohesionWeight
-func _separation():
-	for i in range(_boids.size()):
-		var neighbors = _boids[i].neighbors
-		var distances = _boids[i].neighborsDistances
+		var direction = averagePos - boid.get_position()
+		boid.acceleration += direction * boidData.cohesionWeight
+func _separation(boid: Boid):
+		var neighbors = boid.neighbors
+		var distances = boid.neighborsDistances
 		
 		if (neighbors.is_empty()):
-			continue;
+			return
 			
-		for j in range(neighbors.size()):
-			if (distances[j] >= boidData.separationDistance):
+		for i in range(neighbors.size()):
+			if (distances[i] >= boidData.separationDistance):
 				continue
 			
-			var distMultiplier = 1 - (distances[j] / boidData.separationDistance)
-			var direction = _boids[i].get_position() - neighbors[j].get_position()
+			var distMultiplier = 1 - (distances[i] / boidData.separationDistance)
+			var direction = boid.get_position() - neighbors[i].get_position()
 			direction = direction.normalized()
-			_boids[i].acceleration += direction * distMultiplier * boidData.separationWeight
-func _alignment():
-	for i in range(_boids.size()):
-		var neighbors = _boids[i].neighbors
+			boid.acceleration += direction * distMultiplier * boidData.separationWeight
+func _alignment(boid: Boid):
+		var neighbors = boid.neighbors
 		
 		if (neighbors.is_empty()):
-			continue;
+			return
 		
 		var averageVel = Vector3.ZERO
 		for j in range(neighbors.size()):
 			averageVel += neighbors[j].velocity
 		averageVel /= neighbors.size()
 		
-		_boids[i].acceleration += averageVel * boidData.alignmentWeight
-func _randomness():
+		boid.acceleration += averageVel * boidData.alignmentWeight
+func _randomness(boid:Boid):
 	randomize()
-	for boid in _boids:
-		boid.acceleration += Vector3(randf_range(-1,1),randf_range(-1,1),randf_range(-1,1)).normalized() * boidData.randomnessFactor
-
-func _borders(delta):
-	for boid in _boids:
+	boid.acceleration += Vector3(randf_range(-1,1),randf_range(-1,1),randf_range(-1,1)).normalized() * boidData.randomnessFactor
+func _borders(boid:Boid,delta):
 		var pos = boid.position
 		if (
 			(pos.x < enve.x or pos.x > epve.x) or 

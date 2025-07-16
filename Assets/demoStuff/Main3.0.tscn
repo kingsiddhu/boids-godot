@@ -56,15 +56,14 @@ shadow_enabled = true
 [node name="boidSpawner" parent="." instance=ExtResource("1_ydbo0")]
 aabb = AABB(-46.9992, -42.2073, -46.3451, 93.9983, 84.4143, 92.6901)
 boidData = SubResource("Resource_6mrne")
-numberOfBoids = 30
-debug = true
+numberOfBoids = 1000
 
 [node name="Marker3D" parent="boidSpawner/Avoiders" index="0" instance=ExtResource("2_o37yf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 38.7513)
 mul = 30.0
 
 [node name="RayCast3D" parent="boidSpawner" index="2"]
-target_position = Vector3(0, -85.6416, 0)
+target_position = Vector3(0, -78.347, 0)
 
 [node name="Master" parent="boidSpawner/DEBUG" index="0"]
 collision_mask = 0
@@ -76,6 +75,7 @@ visible = true
 visible = true
 
 [node name="Node3D" type="Node3D" parent="."]
+process_mode = 3
 script = ExtResource("3_6mrne")
 
 [node name="Camera3D" type="Camera3D" parent="Node3D"]

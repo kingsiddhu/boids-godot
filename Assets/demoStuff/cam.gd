@@ -27,6 +27,8 @@ func _input(event: InputEvent) -> void:
 		position = Vector3.ZERO
 		$Camera3D.position.z = 120
 		rotation = Vector3.ZERO
+	elif Input.is_key_pressed(KEY_P):
+		get_tree().paused = not get_tree().paused
 	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
 		var x = event.relative
 		rotation.y += x.x * 0.01
