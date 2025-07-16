@@ -3,6 +3,7 @@ class_name Boid
 @export var maxVelocity: float = 280
 @export var maxAcceleration: float = 1000
 
+var paused : bool
 var frameskip : int
 var frame = 0
 var Parent : VisibleOnScreenNotifier3D
@@ -21,7 +22,7 @@ func _ready():
 	
 func _process(delta):
 	frame+=1
-	if Parent.is_on_screen() and frame>=frameskip:
+	if Parent.is_on_screen() and frame>=frameskip and not paused:
 		velocity += acceleration.limit_length(maxAcceleration * delta)
 		velocity = velocity.limit_length(maxVelocity)
 		acceleration.x = 0

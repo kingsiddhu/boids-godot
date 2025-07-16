@@ -40,12 +40,13 @@ numberOfBoids = 100
 
 [node name="Avoiders" type="Node3D" parent="."]
 
-[node name="RayCast3D" type="RayCast3D" parent="."]
+[node name="Scanner" type="RayCast3D" parent="."]
 target_position = Vector3(0, -78.6451, 0)
 
 [node name="DEBUG" type="Node3D" parent="."]
 
 [node name="Master" type="Area3D" parent="DEBUG"]
+collision_layer = 2147483649
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="DEBUG/Master"]
 shape = SubResource("BoxShape3D_cdoht")
@@ -72,6 +73,10 @@ monitorable = false
 [node name="CollisionShape3D" type="CollisionShape3D" parent="DEBUG/BorderCheck"]
 shape = SubResource("BoxShape3D_qqdmh")
 debug_color = Color(0, 0.557824, 0.899304, 0.172549)
+
+[node name="OccScanner" type="RayCast3D" parent="."]
+collision_mask = 2147483649
+collide_with_areas = true
 
 [connection signal="editor_state_changed" from="." to="." method="_on_property_list_changed"]
 [connection signal="body_entered" from="DEBUG/Master" to="." method="_on_area_3d_body_entered"]

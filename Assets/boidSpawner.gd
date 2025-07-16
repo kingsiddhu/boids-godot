@@ -25,6 +25,7 @@ var raylen :int
 var frame : int
 var frameskip : int
 var oldframeskip:int
+var paused : bool = false
 
 @onready var thread : Thread = Thread.new()
 @export_flags_3d_physics var AvoiderMask :int = 0:
@@ -40,7 +41,7 @@ var oldframeskip:int
 		$DEBUG/Master/CollisionShape3D.shape.size = aabb.size
 		$DEBUG/OuterLimit/CollisionShape3D.shape.size = aabb.size *bordermag
 		$DEBUG/BorderCheck/CollisionShape3D.shape.size = aabb.size *.5
-		$RayCast3D.target_position = Vector3(0,-enve.distance_to(Vector3.ZERO),0)
+		$Scanner.target_position = Vector3(0,-enve.distance_to(Vector3.ZERO),0)
 @export var debug:bool
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -62,22 +63,35 @@ func _ready():
 			instance.Parent = self
 			instance.maxVelocity = boidData.maxVelocity
 			instance.maxAcceleration = boidData.maxAcceleration
-	$RayCast3D.target_position = Vector3(0,-enve.distance_to(Vector3.ZERO),0)
+	$Scanner.target_position = Vector3(0,-enve.distance_to(Vector3.ZERO),0)
 	raylen=enve.distance_to(Vector3.ZERO)
 	update = true
 
 func _process(delta):
 	if not Engine.is_editor_hint():
-		if is_on_screen():
+		if is_on_screen() and not paused:
 			frame+=1
-			frameskip = int(0.01*get_viewport().get_camera_3d().global_position.distance_to(global_position))**1.5
+			frameskip = int(0.004*get_viewport().get_camera_3d().global_position.distance_to(global_position))**3
+			#frameskip *= 30*delta
 			#prints(frame,frameskip)
 			if frame>=frameskip:
 				#thread.start(_run.bind(delta, $Avoiders.get_children()))
 				_run(delta)
 				frame = 0
 				oldframeskip = frameskip
-			
+
+func _physics_process(delta: float) -> void:
+	if not Engine.is_editor_hint():
+		var cam: Camera3D = get_viewport().get_camera_3d()
+		$OccScanner.target_position = cam.global_position
+		var newpau = $OccScanner.get_collider() != null
+		print(newpau, paused)
+		if newpau!=paused:
+			for i in _boids:
+				i.paused = newpau
+				paused = newpau
+	
+	
 func _run(delta):
 	
 	for i in _avoiders:
@@ -119,11 +133,11 @@ func _detectTerrain(boid: Boid):
 		(pos.y < bTn.y or pos.y > bTp.y) or
 		(pos.z < bTn.z or pos.z > bTp.z)):
 		var dir :Vector3= (midPoint - pos).normalized()
-		#$RayCast3D.look_at(dir )
-		$RayCast3D.target_position = -dir * raylen
-		$RayCast3D.force_raycast_update()
-		if $RayCast3D.is_colliding():
-			var colpoint :Vector3= $RayCast3D.get_collision_point()
+		#$Scanner.look_at(dir )
+		$Scanner.target_position = -dir * raylen
+		$Scanner.force_raycast_update()
+		if $Scanner.is_colliding():
+			var colpoint :Vector3= $Scanner.get_collision_point()
 			
 			if pos.distance_to(midPoint)>colpoint.distance_to(midPoint)*bordermag:
 				#prints(colpoint.y, pos.y, )
@@ -131,12 +145,12 @@ func _detectTerrain(boid: Boid):
 					var deb = CSGBox3D.new()
 					deb.position = colpoint
 					add_child(deb)
-				$RayCast3D.debug_shape_custom_color = Color("ffffff")
+				$Scanner.debug_shape_custom_color = Color("ffffff")
 				#boid.velocity /=2*get_physics_process_delta_time()
 				boid.acceleration += dir * boidData.terrainAvoidness
-				boid.velocity = $RayCast3D.get_collision_normal() * boid.velocity.length()  #dir * boidData.terrainAvoidness
+				boid.velocity = $Scanner.get_collision_normal() * boid.velocity.length()  #dir * boidData.terrainAvoidness
 			else:
-				$RayCast3D.debug_shape_custom_color = Color("ffff00")
+				$Scanner.debug_shape_custom_color = Color("ffff00")
 func _cohesion(boid:Boid):
 		var neighbors = boid.neighbors
 		
@@ -238,4 +252,4 @@ func _on_property_list_changed() -> void:
 	$DEBUG/Master/CollisionShape3D.shape.size = aabb.size
 	$DEBUG/OuterLimit/CollisionShape3D.shape.size = aabb.size *bordermag
 	$DEBUG/BorderCheck/CollisionShape3D.shape.size = aabb.size *.5
-	$RayCast3D.target_position = Vector3(0,-enve.distance_to(Vector3.ZERO),0)
+	$Scanner.target_position = Vector3(0,-enve.distance_to(Vector3.ZERO),0)
