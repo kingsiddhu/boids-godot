@@ -1,5 +1,5 @@
 extends Resource
-class_name Boid
+class_name BoidRes
 
 
 @export var boidScene: PackedScene
@@ -19,3 +19,5 @@ class_name Boid
 
 @export var maxVelocity: float = 28
 @export var maxAcceleration: float = 100
+
+@export var terrainAvoidness : float =10

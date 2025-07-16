@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://dry4n2alw8f6c"]
+[gd_scene load_steps=13 format=3 uid="uid://dry4n2alw8f6c"]
 
 [ext_resource type="PackedScene" uid="uid://bru0yqvf86m27" path="res://Assets/boidSpawner.tscn" id="1_ydbo0"]
 [ext_resource type="PackedScene" uid="uid://bpfru02q8e6wo" path="res://Assets/boid.tscn" id="2_6mrne"]
@@ -23,7 +23,7 @@ ambient_light_color = Color(1, 1, 1, 1)
 tonemap_mode = 2
 glow_enabled = true
 
-[sub_resource type="Resource" id="Resource_uu4b6"]
+[sub_resource type="Resource" id="Resource_6mrne"]
 script = ExtResource("3_cr223")
 boidScene = ExtResource("2_6mrne")
 visualRange = 3.0
@@ -37,7 +37,12 @@ predatorWeight = 50.0
 randomnessFactor = 10.0
 maxVelocity = 28.0
 maxAcceleration = 100.0
+terrainAvoidness = 10.0
 metadata/_custom_type_script = "uid://bkuxrdlc6ng6h"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cr223"]
+albedo_color = Color(0.533037, 0.533037, 0.533037, 1)
+ao_light_affect = 1.0
 
 [node name="Main3_0" type="Node3D"]
 
@@ -49,18 +54,26 @@ transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75
 shadow_enabled = true
 
 [node name="boidSpawner" parent="." instance=ExtResource("1_ydbo0")]
-aabb = AABB(-120.885, -99.7987, -169.932, 241.77, 199.597, 339.864)
-boidData = SubResource("Resource_uu4b6")
+aabb = AABB(-46.9992, -42.2073, -46.3451, 93.9983, 84.4143, 92.6901)
+boidData = SubResource("Resource_6mrne")
+numberOfBoids = 30
+debug = true
 
 [node name="Marker3D" parent="boidSpawner/Avoiders" index="0" instance=ExtResource("2_o37yf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 38.7513)
 mul = 30.0
 
 [node name="RayCast3D" parent="boidSpawner" index="2"]
-target_position = Vector3(0, -231.192, 0)
+target_position = Vector3(0, -85.6416, 0)
 
 [node name="Master" parent="boidSpawner/DEBUG" index="0"]
 collision_mask = 0
+
+[node name="OuterLimit" parent="boidSpawner/DEBUG" index="1"]
+visible = true
+
+[node name="BorderCheck" parent="boidSpawner/DEBUG" index="2"]
+visible = true
 
 [node name="Node3D" type="Node3D" parent="."]
 script = ExtResource("3_6mrne")
@@ -74,7 +87,7 @@ gizmo_extents = 7.9
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(48.115, 0, 0, 0, 48.115, 0, 0, 0, 48.115, 0, -25.3183, 0)
-transparency = 0.89
+material_override = SubResource("StandardMaterial3D_cr223")
 mesh = ExtResource("4_cr223")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D"]

@@ -18,6 +18,7 @@ predatorWeight = 50.0
 randomnessFactor = 10.0
 maxVelocity = 28.0
 maxAcceleration = 100.0
+terrainAvoidness = 10.0
 metadata/_custom_type_script = "uid://bkuxrdlc6ng6h"
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_cdoht"]

@@ -1,5 +1,5 @@
 extends Node3D
-
+class_name Boid
 @export var maxVelocity: float = 280
 @export var maxAcceleration: float = 1000
 

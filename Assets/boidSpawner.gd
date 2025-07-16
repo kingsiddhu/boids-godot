@@ -1,7 +1,7 @@
 @tool
 extends VisibleOnScreenNotifier3D
 
-@export var boidData : Boid
+@export var boidData : BoidRes
 @export var numberOfBoids: int
 
 
@@ -55,9 +55,9 @@ func _ready():
 			$Boids.add_child(instance)
 			_boids.append(instance)
 			instance.set_position( Vector3(
-				randf_range(aabb.position.x, aabb.size.x+aabb.position.x),
-				randf_range(aabb.position.y, aabb.size.y+aabb.position.y),
-				randf_range(aabb.position.z, aabb.size.z+aabb.position.z)
+				randf_range(enve.x, epve.x),
+				randf_range(enve.y, epve.y),
+				randf_range(enve.z, epve.z)
 			))
 			instance.Parent = self
 			instance.maxVelocity = boidData.maxVelocity
@@ -114,7 +114,7 @@ func _detectNeighbors():
 				_boids[i].neighborsDistances.append(distance)
 				_boids[j].neighborsDistances.append(distance)
 func _detectTerrain():
-	for boid in _boids:
+	for boid in _boids as Array[Boid]:
 		var pos :Vector3= boid.position
 		if ((pos.x < bTn.x or pos.x > bTp.x) or 
 			(pos.y < bTn.y or pos.y > bTp.y) or
@@ -126,14 +126,16 @@ func _detectTerrain():
 			if $RayCast3D.is_colliding():
 				var colpoint :Vector3= $RayCast3D.get_collision_point()
 				
-				if pos.distance_to(midPoint)>colpoint.distance_to(midPoint)*.9:
+				if pos.distance_to(midPoint)>colpoint.distance_to(midPoint)*bordermag:
 					#prints(colpoint.y, pos.y, )
-					if debug:
+					if debug and pos.distance_to(midPoint)>colpoint.distance_to(midPoint): #Phasing
 						var deb = CSGBox3D.new()
 						deb.position = colpoint
 						add_child(deb)
 					$RayCast3D.debug_shape_custom_color = Color("ffffff")
-					boid.acceleration += dir
+					#boid.velocity /=2*get_physics_process_delta_time()
+					boid.acceleration += dir * boidData.terrainAvoidness
+					boid.velocity = $RayCast3D.get_collision_normal() * boid.velocity.length()  #dir * boidData.terrainAvoidness
 				else:
 					$RayCast3D.debug_shape_custom_color = Color("ffff00")
 func _cohesion():

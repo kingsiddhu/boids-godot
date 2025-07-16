@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bqs1knj2ygjje" path="res://Assets/avoidermarker.gd" id="1_l7jnd"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_fgkb6"]
-radius = 1.0
+radius = 30.0
 
 [node name="Marker3D" type="Marker3D"]
 gizmo_extents = 10.0
